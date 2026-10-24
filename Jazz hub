@@ -1,0 +1,104 @@
+-- Load the Redz UI Library
+local redzlib = loadstring(game:HttpGet("https://raw.githubusercontent.com/REDzHUB/RedzLibV5/main/Source.lua"))()
+
+-- Create Main Window
+local Window = redzlib:MakeWindow({
+    Title = "Jazz Hub",
+    SubTitle = "Volleyball Legends",
+    SaveFolder = "JazzHubConfig"
+})
+
+-- Minimize Button for Mobile/Executors
+Window:AddMinimizeButton({
+    Button = { Image = "rbxassetid://7072719172", BackgroundTransparency = 0.5 },
+    Corner = { CornerRadius = UDim.new(0, 6) }
+})
+
+--- ============================================
+--- TAB 1: MAIN GAMEPLAY / HITBOX
+--- ============================================
+local MainTab = Window:MakeTab({"Main", "cherry"})
+
+MainTab:AddSection({"Ball Modifications"})
+
+-- Hitbox Expander Variables
+getgenv().HitboxExpanderEnabled = false
+getgenv().HitboxSize = 15
+
+-- Hitbox Toggle
+local HitboxToggle = MainTab:AddToggle({
+    Name = "Ball Hitbox Expander",
+    Description = "Expands the ball's touch reach for easier hits",
+    Default = false
+})
+
+HitboxToggle:Callback(function(Value)
+    getgenv().HitboxExpanderEnabled = Value
+end)
+
+-- Hitbox Size Slider
+MainTab:AddSlider({
+    Name = "Hitbox Size",
+    Min = 5,
+    Max = 40,
+    Increase = 1,
+    Default = 15,
+    Callback = function(Value)
+        getgenv().HitboxSize = Value
+    end
+})
+
+--- ============================================
+--- HITBOX EXPANDER BACKGROUND LOOP
+--- ============================================
+local RunService = game:GetService("RunService")
+
+RunService.Heartbeat:Connect(function()
+    if not getgenv().HitboxExpanderEnabled then return end
+    
+    -- Looks for the volleyball model/part in workspace (commonly named CLIENT_BALL or similar)
+    for _, obj in ipairs(workspace:GetChildren()) do
+        if obj.Name:lower():find("ball") then
+            local targetPart = obj:IsA("BasePart") and obj or obj:FindFirstChild("BasePart") or obj:FindFirstChildWhichIsA("BasePart")
+            
+            if targetPart then
+                -- Modify size and transparency/collision properties for easier hitting
+                targetPart.Size = Vector3.new(getgenv().HitboxSize, getgenv().HitboxSize, getgenv().HitboxSize)
+                targetPart.CanCollide = false
+            end
+        end
+    end
+end)
+
+--- ============================================
+--- TAB 2: PLAYER UTILITIES
+--- ============================================
+local PlayerTab = Window:MakeTab({"Player", "user"})
+
+PlayerTab:AddSection({"Movement"})
+
+PlayerTab:AddSlider({
+    Name = "WalkSpeed",
+    Min = 16,
+    Max = 100,
+    Increase = 1,
+    Default = 16,
+    Callback = function(Value)
+        local character = game.Players.LocalPlayer.Character
+        if character and character:FindFirstChild("Humanoid") then
+            character.Humanoid.WalkSpeed = Value
+        end
+    end
+})
+
+--- ============================================
+--- TAB 3: SETTINGS
+--- ============================================
+local SettingsTab = Window:MakeTab({"Settings", "settings"})
+
+SettingsTab:AddButton({
+    Name = "Destroy UI",
+    Callback = function()
+        redzlib:Destroy()
+    end
+})
